@@ -1,0 +1,17 @@
+# Exclude directories
+
+venv/
+\_research/
+
+# Exclude any other files you want to ignore
+
+_.pyc
+**pycache**/
+_.pyo
+_.pyd
+.Python
+.idea
+.vscode
+_.swp
+
+algotrader-angelone.tar

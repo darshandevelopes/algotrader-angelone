@@ -18,10 +18,10 @@
 <body>
     <nav class="navbar">
       <div class="nav-left">
-        <a href="/home" class="nav-item">Trades</a>
-        <a href="/new" class="nav-item">Create New</a>
+        <a href="/home/" class="nav-item">Trades</a>
+        <a href="/new/" class="nav-item">Create New</a>
       </div>
-      <a href="/logout" class="nav-item logout">Logout</a>
+      <a href="/logout/" class="nav-item logout">Logout</a>
     </nav>
 
     <h1>Edit Trade</h1>
@@ -181,7 +181,7 @@
         .then((response) => {
           if (response.ok) {
             loadingOverlay.style.display = "None";
-            window.location.href = "/home";
+            window.location.href = "/home/";
           } else {
             return response.json().then((data) => {
               throw new Error(data.message);
