@@ -1,0 +1,242 @@
+/* myapp/static/myapp/css/styles.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  color: #000;
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 10px;
+}
+
+.container {
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.input-box {
+  width: 100%;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+  font-size: 16px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  margin-top: 50%;
+}
+
+.input-box::placeholder {
+  color: black;
+  opacity: 0.7;
+}
+
+#login-button {
+  background-color: #3f5bd9;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 50%;
+}
+
+#login-button:hover {
+  background-color: #2d46b0;
+}
+
+.navbar {
+  background-color: #e3ebf6;
+  display: flex;
+  justify-content: space-between; /* Space between the left and right sections */
+  align-items: center; /* Center items vertically */
+  padding: 15px 20px;
+}
+
+.nav-left {
+  display: flex;
+}
+
+.nav-item {
+  color: black;
+  text-decoration: none; /* Remove underline */
+  margin-right: 20px;
+  font-size: 18px;
+  transition: color 0.3s, text-decoration-color 0.3s, text-underline-offset 0.3s;
+  text-decoration-thickness: 2px; /* Thickness of the underline */
+}
+
+.nav-item:hover {
+  color: #3f5bd9;
+  text-decoration: underline; /* Underline on hover */
+  text-decoration-color: #3f5bd9; /* Underline color on hover */
+  text-underline-offset: 10px; /* Space between text and underline*/
+}
+
+.nav-active {
+  color: #3f5bd9;
+  text-decoration: underline; /* Underline on hover */
+  text-decoration-color: #3f5bd9; /* Underline color on hover */
+  text-underline-offset: 10px; /* Space between text and underline, adjust as needed */
+}
+
+.logout {
+  margin-right: 0;
+}
+
+#separator {
+  height: 1px;
+  background-color: rgba(128, 128, 128, 0.5);
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+table {
+  border-collapse: separate;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  border-spacing: 0 20px;
+}
+
+td {
+  padding: 10px 15px;
+
+  border: 1px solid #dddddd; /* Border for each cell */
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+.trade-item {
+  font-weight: bold;
+}
+
+.pending {
+  color: #ef5854;
+}
+
+.placed {
+  color: #21b7a8;
+}
+
+.exited {
+  color: yellowgreen;
+}
+
+.quantity {
+  color: black;
+  opacity: 0.7;
+  margin-left: 5px;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 20px; /* Icon size */
+  cursor: pointer; /* Pointer cursor on hover */
+  margin-right: 5px;
+  margin-left: 5px;
+  transition: transform 0.3s;
+}
+
+.delete-button:hover {
+  transform: scale(1.1); /* Slightly enlarge the button on hover */
+}
+
+.chbx {
+  border: none;
+  font-size: 18px;
+}
+
+legend {
+  font-size: 14px;
+}
+
+fieldset {
+  width: 86%;
+  margin: 10px;
+}
+
+.table-form {
+  border-spacing: None;
+  border-collapse: collapse;
+}
+
+.table-form td {
+  border: None;
+  padding: 0px;
+}
+
+.table-form tr:hover {
+  background-color: white;
+}
+
+#action-button {
+  background-color: #3f5bd9;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10%;
+  margin-bottom: 50%;
+}
+
+.field-group {
+  display: flex;
+  align-items: center; /* Center items vertically */
+  justify-content: space-between; /* Space between elements */
+  gap: 5px; /* Gap between input and select */
+}
+
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: none; /* Initially hidden */
+}
+
+.loader {
+  border: 10px solid #f3f3f3;
+  border-top: 10px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Loader animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

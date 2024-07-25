@@ -1,0 +1,304 @@
+<!-- myapp/templates/myapp/new.html -->
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTrader | New</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'myapp/css/styles.css' %}"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="/home" class="nav-item">Trades</a>
+        <a href="/new" class="nav-item nav-active">Create New</a>
+      </div>
+      <a href="/logout" class="nav-item logout">Logout</a>
+    </nav>
+    <h1>Create New</h1>
+    <div id="separator"></div>
+    <table class="table-form">
+      <tr>
+        <td>
+          <fieldset>
+            <legend>Stock 1</legend>
+            <input
+              id="stock1"
+              type="text"
+              class="chbx"
+              name="stock1"
+              value=""
+              placeholder="to be bought"
+            />
+          </fieldset>
+          <fieldset>
+            <legend>Stock 2</legend>
+            <input
+              id="stock2"
+              type="text"
+              class="chbx"
+              name="stock1"
+              value=""
+              placeholder="to be sold"
+            />
+          </fieldset>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <fieldset>
+            <legend>Quantity</legend>
+            <input
+              id="quantity"
+              type="number"
+              class="chbx"
+              name="stock1"
+              value=""
+              placeholder="quantity"
+            />
+          </fieldset>
+          <fieldset>
+            <legend>Entry</legend>
+            <div class="field-group">
+              <input
+                id="entry"
+                size="14"
+                type="number"
+                class="chbx"
+                name="stock1"
+                value=""
+                placeholder="at difference of"
+              />
+              <select name="diff" id="entryDiff">
+                <option value="points">Points</option>
+                <option value="percentage">%</option>
+              </select>
+            </div>
+          </fieldset>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <fieldset>
+            <legend>Exit</legend>
+            <div class="field-group">
+              <input
+                id="exit"
+                size="14"
+                type="number"
+                class="chbx"
+                name="stock1"
+                value=""
+                placeholder="at difference of"
+              />
+              <select name="diff" id="exitDiff">
+                <option value="points">Points</option>
+                <option value="percentage">%</option>
+              </select>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Stop loss</legend>
+            <div class="field-group">
+              <input
+                id="stop-loss"
+                size="14"
+                type="number"
+                class="chbx"
+                name="stock1"
+                value=""
+                placeholder="at difference of"
+              />
+              <select name="diff" id="stopLossDiff">
+                <option value="points">Points</option>
+                <option value="percentage">%</option>
+              </select>
+            </div>
+          </fieldset>
+        </td>
+      </tr>
+    </table>
+    <div class="container">
+      <button id="action-button">Create</button>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay">
+      <div class="loader"></div>
+    </div>
+  </body>
+  <script>
+    document
+      .getElementById("action-button")
+      .addEventListener("click", function () {
+        // Show the loading overlay
+        const loadingOverlay = document.getElementById("loading-overlay");
+        loadingOverlay.style.display = "flex";
+
+        // Get form values
+        const stock1 = document.getElementById("stock1").value;
+        const stock2 = document.getElementById("stock2").value;
+        const quantity = document.getElementById("quantity").value;
+        const entry = document.getElementById("entry").value;
+        const entryDiff = document.getElementById("entryDiff").value;
+        const exit = document.getElementById("exit").value;
+        const exitDiff = document.getElementById("exitDiff").value;
+        const stopLoss = document.getElementById("stop-loss").value;
+        const stopLossDiff = document.getElementById("stopLossDiff").value;
+
+        // Prepare the data to send
+        const data = {
+          stock1,
+          stock2,
+          quantity,
+          entry,
+          entryDiff,
+          exit,
+          exitDiff,
+          stopLoss,
+          stopLossDiff,
+        };
+
+        // Send the data to the server
+        fetch("/new/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => {
+            if (response.ok) {
+              window.location.href = "/home";
+            } else {
+              return response.json().then((data) => {
+                throw new Error(data.message);
+              });
+            }
+          })
+          .catch((error) => {
+            // Handle errors
+            alert("Error creating trade: " + error.message);
+
+            // Hide the loading overlay
+            loadingOverlay.style.display = "none";
+          });
+      });
+
+    // Function to get the CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === name + "=") {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+
+  <!-- Autocomplete functionality -->
+  <script>
+    const stockSymbols = {{ stock_symbols|safe }};
+
+    // Simple autocomplete function
+    function autocomplete(input, options) {
+        let currentFocus;
+
+        input.addEventListener("input", function () {
+            let list, item, val = this.value;
+            // Close any already open lists of autocompleted values
+            closeAllLists();
+            if (!val) { return false; }
+            currentFocus = -1;
+
+            // Create a DIV element that will contain the autocomplete items:
+            list = document.createElement("DIV");
+            list.setAttribute("id", this.id + "autocomplete-list");
+            list.setAttribute("class", "autocomplete-items");
+            this.parentNode.appendChild(list);
+
+            // Iterate over the stock options and filter results based on input
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                    item = document.createElement("DIV");
+                    item.innerHTML = "<strong>" + options[i].substr(0, val.length) + "</strong>";
+                    item.innerHTML += options[i].substr(val.length);
+                    item.innerHTML += "<input type='hidden' value='" + options[i] + "'>";
+
+                    item.addEventListener("click", function () {
+                        input.value = this.getElementsByTagName("input")[0].value;
+                        closeAllLists();
+                    });
+                    list.appendChild(item);
+                }
+            }
+        });
+
+        // Handle keyboard navigation within the autocomplete list
+        input.addEventListener("keydown", function (e) {
+            let x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+
+            if (e.keyCode == 40) {  // Arrow DOWN
+                currentFocus++;
+                addActive(x);
+            } else if (e.keyCode == 38) {  // Arrow UP
+                currentFocus--;
+                addActive(x);
+            } else if (e.keyCode == 13) {  // Enter
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    if (x) x[currentFocus].click();
+                }
+            }
+        });
+        // Add active class to the selected item
+        function addActive(x) {
+            if (!x) return false;
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+        // Remove active class from all autocomplete items
+        function removeActive(x) {
+            for (let i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+            }
+        }
+        // Close all autocomplete lists in the document, except the one passed as an argument
+        function closeAllLists(elmnt) {
+            let x = document.getElementsByClassName("autocomplete-items");
+            for (let i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != input) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        }
+        // Close the autocomplete list when clicking outside of it
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+
+    // Initialize autocomplete for Stock 1 and Stock 2 fields
+    autocomplete(document.getElementById("stock1"), stockSymbols);
+    autocomplete(document.getElementById("stock2"), stockSymbols);
+  </script>
+</html>
