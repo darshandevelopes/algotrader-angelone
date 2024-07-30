@@ -10,9 +10,9 @@ class Trade(models.Model):
     quantity = models.IntegerField()
     entry = models.DecimalField(max_digits=10, decimal_places=2)
     entry_diff = models.CharField(max_length=10)
-    exit = models.DecimalField(max_digits=10, decimal_places=2)
+    exit = models.DecimalField(max_digits=10, decimal_places=2,  null=True, blank=True)
     exit_diff = models.CharField(max_length=10)
-    stop_loss = models.DecimalField(max_digits=10, decimal_places=2)
+    stop_loss = models.DecimalField(max_digits=10, decimal_places=2,  null=True, blank=True)
     stop_loss_diff = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, default='Pending') # Pending, Placed, Exited
@@ -21,8 +21,8 @@ class Trade(models.Model):
         return f"{self.stock1} & {self.stock2} - {self.quantity} units"
 
     def clean(self):
-        if self.entry <= 0 or self.exit <= 0 or self.stop_loss <= 0:
-            raise ValidationError("Entry, Exit, Stop Loss and Quantity must be positive numbers.")
+        if self.entry <= 0 or self.quantity <= 0 :
+            raise ValidationError("Entry, and Quantity must be positive numbers.")
 
     def save(self, *args, **kwargs):
         # Call the clean method before saving

@@ -43,10 +43,12 @@ def new(request):
             quantity = int(data.get('quantity'))
             entry = float(data.get('entry'))
             entry_diff = data.get('entryDiff')
-            exit = float(data.get('exit'))
             exit_diff = data.get('exitDiff')
-            stop_loss = float(data.get('stopLoss'))
             stop_loss_diff = data.get('stopLossDiff')
+
+             # Handle optional fields, converting empty strings to None
+            exit = float(data.get('exit')) if data.get('exit') else None
+            stop_loss = float(data.get('stopLoss')) if data.get('stopLoss') else None
 
             # Create a new Trade object and save it to the database
             trade = Trade(
@@ -82,10 +84,12 @@ def edit(request, id):
             trade.quantity = int(data.get('quantity'))
             trade.entry = float(data.get('entry'))
             trade.entry_diff = data.get('entryDiff')
-            trade.exit = float(data.get('exit'))
             trade.exit_diff = data.get('exitDiff')
-            trade.stop_loss = float(data.get('stopLoss'))
             trade.stop_loss_diff = data.get('stopLossDiff')
+            # Handle optional fields, converting empty strings to None
+            trade.exit = float(data.get('exit')) if data.get('exit') else None
+            trade.stop_loss = float(data.get('stopLoss')) if data.get('stopLoss') else None
+
             trade.save()
             return JsonResponse({'success': True, 'message': 'Trade updated successfully'})
         except Trade.DoesNotExist:

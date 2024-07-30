@@ -14,6 +14,11 @@ def check_and_execute_trades():
         # Fetch all trades
         trades = Trade.objects.all()
 
+        # Skip if no trades are there
+        if len(trades) == 0:
+            time.sleep(0.6)
+            continue
+
         # Get all stocks as a dictionary
         stocks = get_stocks_as_dict()
 
@@ -32,7 +37,7 @@ def check_and_execute_trades():
                     ltp_param['NFO'].append(stocks[trade.stock2]['token'])
             except:
                 logger.error(f"Could not find token for stock {trade.stock1} or {trade.stock2}")
-
+        
         ltp_data = client.get_ltp(ltp_param)  # {'DRREDDY-EQ': 6820.15, 'SBIN-EQ': 852.0}
         if ltp_data is None:
             time.sleep(1)
@@ -47,6 +52,13 @@ def check_and_execute_trades():
                 if trade.status == 'Pending':
                     # Check if the trade should be placed
                     if should_place_trade(trade, ltp_data):
+
+                        # Determine the product type
+                        if stocks[trade.stock1]['exch_seg'] == 'NFO' and stocks[trade.stock2]['exch_seg'] == 'NFO':
+                            product_type = "CARRYFORWARD"
+                        else:
+                            product_type = "INTRADAY"
+                            
                         # Place the trade
                         try:
                             orderparams = {
@@ -56,7 +68,7 @@ def check_and_execute_trades():
                                         "exchange":stocks[trade.stock2]['exch_seg'],
                                         "symboltoken": stocks[trade.stock2]['token'],
                                         "ordertype":"MARKET",
-                                        "producttype":"INTRADAY",
+                                        "producttype": product_type,
                                         "duration":"DAY",
                                         "variety":"NORMAL",
                                         }
@@ -71,7 +83,7 @@ def check_and_execute_trades():
                                         "exchange":stocks[trade.stock1]['exch_seg'],
                                         "symboltoken": stocks[trade.stock1]['token'],
                                         "ordertype":"MARKET",
-                                        "producttype":"INTRADAY",
+                                        "producttype": product_type,
                                         "duration":"DAY",
                                         "variety":"NORMAL",
                                         }
@@ -94,6 +106,13 @@ def check_and_execute_trades():
                 elif trade.status == 'Placed':
                     # Check if the trade should be exited
                     if should_exit_trade(trade, ltp_data):
+
+                        # Determine the product type
+                        if stocks[trade.stock1]['exch_seg'] == 'NFO' and stocks[trade.stock2]['exch_seg'] == 'NFO':
+                            product_type = "CARRYFORWARD"
+                        else:
+                            product_type = "INTRADAY"
+
                         # Exit the trade
                         try:
                             orderparams = {
@@ -103,7 +122,7 @@ def check_and_execute_trades():
                                         "exchange":stocks[trade.stock2]['exch_seg'],
                                         "symboltoken": stocks[trade.stock2]['token'],
                                         "ordertype":"MARKET",
-                                        "producttype":"INTRADAY",
+                                        "producttype": product_type,
                                         "duration":"DAY",
                                         "variety":"NORMAL",
                                         }
@@ -118,7 +137,7 @@ def check_and_execute_trades():
                                         "exchange":stocks[trade.stock1]['exch_seg'],
                                         "symboltoken": stocks[trade.stock1]['token'],
                                         "ordertype":"MARKET",
-                                        "producttype":"INTRADAY",
+                                        "producttype": product_type,
                                         "duration":"DAY",
                                         "variety":"NORMAL",
                                         }
@@ -137,14 +156,9 @@ def check_and_execute_trades():
 
                         except Exception as e:
                             logger.exception(f"Order placement failed: {e}")
-
-
                         
         except Exception as e:
             logger.error(f"Error processing trade {trade.id}: {e}")
-
-        # Wait before the next round of checks
-        time.sleep(60)  # Adjust the interval as needed
 
 def should_place_trade(trade:Trade, ltp_data):
     stock1_ltp = ltp_data[trade.stock1]
@@ -160,14 +174,21 @@ def should_place_trade(trade:Trade, ltp_data):
 def should_exit_trade(trade:Trade, ltp_data):
     stock1_ltp = ltp_data[trade.stock1]
     stock2_ltp = ltp_data[trade.stock2]
-    exit_condition = (
-        trade.exit_diff == 'points' and abs(stock2_ltp - stock1_ltp) >= trade.exit or
-        trade.exit_diff == 'percentage' and abs(stock2_ltp - stock1_ltp ) / stock1_ltp * 100 >= trade.exit
-    )
-    stoploss_condition = (
-        trade.stop_loss_diff == 'points' and abs(stock2_ltp - stock1_ltp) >= trade.stop_loss or
-        trade.stop_loss_diff == 'percentage' and abs(stock2_ltp - stock1_ltp ) / stock1_ltp * 100 >= trade.stop_loss
-    )
+
+    exit_condition = False
+    if trade.exit is not None or trade.exit != '':
+        exit_condition = (
+            trade.exit_diff == 'points' and abs(stock2_ltp - stock1_ltp) >= trade.exit or
+            trade.exit_diff == 'percentage' and abs(stock2_ltp - stock1_ltp ) / stock1_ltp * 100 >= trade.exit
+        )
+
+    stoploss_condition = False
+    if trade.stop_loss is not None or trade.stop_loss != '':
+        stoploss_condition = (
+            trade.stop_loss_diff == 'points' and abs(stock2_ltp - stock1_ltp) >= trade.stop_loss or
+            trade.stop_loss_diff == 'percentage' and abs(stock2_ltp - stock1_ltp ) / stock1_ltp * 100 >= trade.stop_loss
+        )
+
     if exit_condition or stoploss_condition:
         return True
     return False
