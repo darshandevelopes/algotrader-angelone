@@ -3,10 +3,13 @@ from myapp.models import Trade
 from AngelOne.api import AngelBrokingClient
 from logzero import logger
 from AngelOne.db import get_stocks
+from AngelOne.telegram_alert import send_alert
+import os
+
+client = AngelBrokingClient()
+client.authenticate()
 
 def check_and_execute_trades():
-    client = AngelBrokingClient()
-    client.authenticate()
 
     while True:
         time.sleep(0.5) # Respect API rate limit
@@ -90,6 +93,7 @@ def check_and_execute_trades():
                                 order_2 = client.smartApi.placeOrderFullResponse(orderparams)
                                 if order_2 is None or not order_2['status']:
                                     logger.error(f"Order placement failed: {order_2}")
+                                    send_alert(f"Order placement failed: {orderparams}")
                                     cancel_params = {
                                         "variety": "NORMAL",
                                         "orderid": order_1['data']['orderid']
@@ -102,7 +106,8 @@ def check_and_execute_trades():
 
                         except Exception as e:
                             logger.exception(f"Order placement failed: {e}")
-                      
+                            send_alert(f"Error in order placement: {e}")
+                            
                 elif trade.status == 'Placed':
                     # Check if the trade should be exited
                     if should_exit_trade(trade, ltp_data):
@@ -144,6 +149,7 @@ def check_and_execute_trades():
                                 order_2 = client.smartApi.placeOrderFullResponse(orderparams)
                                 if order_2 is None or not order_2['status']:
                                     logger.error(f"Order placement failed: {order_2}")
+                                    send_alert(f"Error in order placement: {orderparams}")
                                     cancel_params = {
                                         "variety": "NORMAL",
                                         "orderid": order_1['data']['orderid']
@@ -156,9 +162,11 @@ def check_and_execute_trades():
 
                         except Exception as e:
                             logger.exception(f"Order placement failed: {e}")
-                        
+                            send_alert(f"Error in order placement: {e}")
+                   
         except Exception as e:
             logger.error(f"Error processing trade {trade.id}: {e}")
+            send_alert(f"Error processing trade: {e}")
 
 def should_place_trade(trade:Trade, ltp_data):
     stock1_ltp = ltp_data[trade.stock1]
@@ -214,3 +222,34 @@ def get_stocks_as_dict()->dict:
         }
     
     return result
+
+def send_alerts_for_executed_orders():
+    # Construct the absolute path to file
+    current_dir = os.path.dirname(os.path.abspath(__file__))    
+    file_path = os.path.join(current_dir, 'alerts-sent.txt')
+
+    def save_list_to_file(file_path, list_data):
+        with open(file_path, 'w') as file:
+            file.write('\n'.join(list_data))
+
+    def read_list_from_file(file_path)->list:
+        with open(file_path, 'r') as file:
+            list_data = file.read().splitlines()  # Read lines without newlines
+        return list_data
+
+    while True:
+        try:
+            time.sleep(5)
+
+            alert_sent_already = read_list_from_file(file_path)
+
+            trade_book = client.smartApi.tradeBook()
+            for trade in trade_book['data']:
+                if trade['orderid'] not in alert_sent_already:
+                    message = f"__ORDER EXECUTED__\nOrder: {trade['transactiontype']} {trade['tradingsymbol']}\nQuantity: {trade['fillsize']}\nPrice: {trade['fillprice']}"
+                    send_alert(message)
+                    alert_sent_already.append(trade['orderid'])
+
+            save_list_to_file(file_path, alert_sent_already)
+        except Exception as e:
+            logger.warning(f'Error sending alert: {e}')

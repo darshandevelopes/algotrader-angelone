@@ -6,7 +6,7 @@ class MyAppConfig(AppConfig):
     name = 'myapp'
 
     def ready(self):
-        from AngelOne.task import check_and_execute_trades
+        from AngelOne.task import check_and_execute_trades, send_alerts_for_executed_orders
         from AngelOne.scheduler import schedule_daily_update
         from AngelOne.db import init_db
 
@@ -19,6 +19,10 @@ class MyAppConfig(AppConfig):
             # Start background thread for checking and executing trades
             threading.Thread(target=check_and_execute_trades, daemon=True).start()
 
+            # Start background thread for sending alerts for executed orders
+            threading.Thread(target=send_alerts_for_executed_orders, daemon=True).start()
+
             # Initialize stocks database and schedule daily update
             init_db()
             threading.Thread(target=schedule_daily_update, daemon=True).start()
+
