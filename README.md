@@ -1,19 +1,25 @@
-## Syntax for SCP
-
-```sh
-scp -i abc.pem my-image.tar username@example.com:/home/username/
-```
-
 ## Build Docker Image
 
 ```sh
 docker build -t algotrader .
 ```
 
-## Export Docker image to zip file
+## Save and compress image to gzip file
 
 ```sh
-docker save algotrader | zip > algotrader.zip
+docker save algotrader | gzip > algotrader.tar.gz
+```
+
+## Transfer file to server using SCP
+
+```sh
+scp -i algotrader.pem algotrader.tar.gz ubuntu@example.com:/home/ubuntu/
+```
+
+## Decompress and load image
+
+```sh
+gunzip -c algotrader.tar.gz | docker load
 ```
 
 ## Create Docker Container
