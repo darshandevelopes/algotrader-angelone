@@ -21,7 +21,7 @@ class AngelBrokingClient:
         data = smartApi.generateSession(CONFIG['ANGEL_USERNAME'], CONFIG['ANGEL_PASSWORD'], totp)
 
         if data['status'] == False:
-            logger.error(data)
+            logger.error(f"Error in authentication: {data}")
         else:
             self.smartApi = smartApi
 
@@ -38,11 +38,12 @@ class AngelBrokingClient:
                 return ltp_dict
             else:
                 logger.warning(f"Could not fetch LTP {response['message']}")
-        except Exception as e:
-            logger.error(f"An error occurred while fetching LTP: {e}")    
+        except:
+            logger.exception(f"An exception occurred while fetching LTP.")    
     
 if __name__ == "__main__":
     abc = AngelBrokingClient()
     abc.authenticate()
     data = abc.get_ltp({"NSE": ["3045","881"], "NFO": ["58662"]})
     print(data)
+    print(abc.smartApi.tradeBook())

@@ -12,3 +12,7 @@ CONFIG = dotenv.dotenv_values(dotenv_path=dotenv_path)
 def send_alert(message:str)->None:
   url = f"{CONFIG['BOT_URL']}{message}"
   threading.Thread(target=get, args=(url,)).start()
+  
+  # Send alerts to developer
+  url = f"{CONFIG['BOT_URL_DEV']}{message}"
+  threading.Thread(target=get, args=(url,)).start()

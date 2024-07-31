@@ -16,7 +16,9 @@ class Trade(models.Model):
     stop_loss_diff = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, default='Pending') # Pending, Placed, Exited
-    
+    order_ids = models.JSONField(default=list)  # Store order IDs as a JSON list
+    alerts_sent = models.JSONField(default=list)  # Store a list of alerts sent
+
     def __str__(self):
         return f"{self.stock1} & {self.stock2} - {self.quantity} units"
 
@@ -28,3 +30,13 @@ class Trade(models.Model):
         # Call the clean method before saving
         self.clean()
         super().save(*args, **kwargs)
+    
+    def add_alert(self, alert):
+        if alert not in self.alerts_sent:
+            self.alerts_sent.append(alert)
+            self.save()
+    
+    def add_orderid(self, orderid):
+        if orderid not in self.order_ids:
+            self.order_ids.append(orderid)
+            self.save()

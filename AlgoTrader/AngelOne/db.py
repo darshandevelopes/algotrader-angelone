@@ -79,8 +79,8 @@ def update_stock_data():
 
     except requests.exceptions.Timeout:
         logger.error("The request timed out when downloading the stocks data.")
-    except Exception as e:
-        logger.error(f"An error ocurred: {e}")
+    except:
+        logger.exception(f"An exception ocurred")
 
 def get_stocks():
     conn = sqlite3.connect(db_path)
